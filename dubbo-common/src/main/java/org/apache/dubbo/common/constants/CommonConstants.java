@@ -349,4 +349,7 @@ public interface CommonConstants {
      */
     String DEFAULT_SERVICE_NAME_MAPPING_PROPERTIES_PATH = "META-INF/dubbo/service-name-mapping.properties";
 
+
+    String DISABLE_FAILOVER_RETRY_WHEN_TIMEOUT = "disableFailOverRetryWhenTimeout";
+
 }

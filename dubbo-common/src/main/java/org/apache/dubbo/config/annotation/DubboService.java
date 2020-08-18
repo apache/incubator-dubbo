@@ -125,7 +125,7 @@ public @interface DubboService {
     String stub() default "";
 
     /**
-     * Cluster strategy, legal values include: failover, failfast, failsafe, failback, forking
+     * Cluster strategy, legal values include: failover, failover2, failfast, failsafe, failback, forking
      */
     String cluster() default "";
 

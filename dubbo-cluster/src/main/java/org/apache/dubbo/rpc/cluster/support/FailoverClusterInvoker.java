@@ -36,6 +36,7 @@ import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_RETRIES;
 import static org.apache.dubbo.common.constants.CommonConstants.RETRIES_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DISABLE_FAILOVER_RETRY_WHEN_TIMEOUT;
 
 /**
  * When invoke fails, log the initial error and retry other invokers (retry n times, which means at most n different invokers will be invoked)
@@ -48,8 +49,15 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
     private static final Logger logger = LoggerFactory.getLogger(FailoverClusterInvoker.class);
 
+    private boolean retryWhenTimeout = true;
+
     public FailoverClusterInvoker(Directory<T> directory) {
         super(directory);
+    }
+
+    public FailoverClusterInvoker(Directory<T> directory, boolean retryWhenTimeout) {
+        super(directory);
+        this.retryWhenTimeout = retryWhenTimeout;
     }
 
     @Override
@@ -58,6 +66,8 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
         List<Invoker<T>> copyInvokers = invokers;
         checkInvokers(copyInvokers, invocation);
         String methodName = RpcUtils.getMethodName(invocation);
+
+        boolean retryWhenTimeout = !getUrl().getParameter(DISABLE_FAILOVER_RETRY_WHEN_TIMEOUT, false);
         int len = getUrl().getMethodParameter(methodName, RETRIES_KEY, DEFAULT_RETRIES) + 1;
         if (len <= 0) {
             len = 1;
@@ -66,6 +76,7 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
         RpcException le = null; // last exception.
         List<Invoker<T>> invoked = new ArrayList<Invoker<T>>(copyInvokers.size()); // invoked invokers.
         Set<String> providers = new HashSet<String>(len);
+        int attempts = 0;
         for (int i = 0; i < len; i++) {
             //Reselect before retry to avoid a change of candidate `invokers`.
             //NOTE: if `invokers` changed, then `invoked` also lose accuracy.
@@ -79,6 +90,7 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
             invoked.add(invoker);
             RpcContext.getContext().setInvokers((List) invoked);
             try {
+                attempts++;
                 Result result = invoker.invoke(invocation);
                 if (le != null && logger.isWarnEnabled()) {
                     logger.warn("Although retry the method " + methodName
@@ -96,6 +108,9 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
                 if (e.isBiz()) { // biz exception.
                     throw e;
                 }
+                if (e.isTimeout() && !retryWhenTimeout) {
+                    throw e;
+                }
                 le = e;
             } catch (Throwable e) {
                 le = new RpcException(e.getMessage(), e);
@@ -105,7 +120,7 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
         }
         throw new RpcException(le.getCode(), "Failed to invoke the method "
                 + methodName + " in the service " + getInterface().getName()
-                + ". Tried " + len + " times of the providers " + providers
+                + ". Tried " + attempts + " times of the providers " + providers
                 + " (" + providers.size() + "/" + copyInvokers.size()
                 + ") from the registry " + directory.getUrl().getAddress()
                 + " on the consumer " + NetUtils.getLocalHost() + " using the dubbo version "

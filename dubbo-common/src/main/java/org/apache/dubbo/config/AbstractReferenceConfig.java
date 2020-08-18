@@ -88,6 +88,12 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
 
     protected String router;
 
+    /**
+     * When failover cluster is used, whether or not to disable retry when a timeout occur. By default retry will be enable, to disable retry in this case, set this value to true.
+     */
+    protected Boolean disableFailOverRetryWhenTimeout;
+
+
     public Boolean isCheck() {
         return check;
     }
@@ -244,5 +250,13 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
 
     public void setRouter(String router) {
         this.router = router;
+    }
+
+    public Boolean getDisableFailOverRetryWhenTimeout() {
+        return disableFailOverRetryWhenTimeout;
+    }
+
+    public void setDisableFailOverRetryWhenTimeout(Boolean disableFailOverRetryWhenTimeout) {
+        this.disableFailOverRetryWhenTimeout = disableFailOverRetryWhenTimeout;
     }
 }

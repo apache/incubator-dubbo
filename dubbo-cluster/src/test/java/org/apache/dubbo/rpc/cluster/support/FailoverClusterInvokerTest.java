@@ -64,7 +64,10 @@ public class FailoverClusterInvokerTest {
 
     @BeforeEach
     public void setUp() throws Exception {
+        setUp(url);
+    }
 
+    private void setUp(URL url) {
         dic = mock(Directory.class);
 
         given(dic.getUrl()).willReturn(url);
@@ -76,7 +79,6 @@ public class FailoverClusterInvokerTest {
         invokers.add(invoker1);
         invokers.add(invoker2);
     }
-
 
     @Test
     public void testInvokeWithRuntimeException() {
@@ -139,6 +141,33 @@ public class FailoverClusterInvokerTest {
         } catch (RpcException expected) {
             assertTrue((expected.isTimeout() || expected.getCode() == 0));
             assertTrue(expected.getMessage().indexOf((retries + 1) + " times") > 0);
+        }
+    }
+
+    @Test()
+    public void testInvoke_disableRetry() {
+        //resetup a url disable retry when timeout
+        URL url = URL.valueOf("test://test:11/test?retries=" + retries+"&disableFailOverRetryWhenTimeout=true");
+        setUp(url);
+
+        given(invoker1.invoke(invocation)).willThrow(new RpcException(RpcException.TIMEOUT_EXCEPTION, "Mock Timeout"));
+        given(invoker1.isAvailable()).willReturn(true);
+        given(invoker1.getUrl()).willReturn(url);
+        given(invoker1.getInterface()).willReturn(FailoverClusterInvokerTest.class);
+
+        given(invoker2.invoke(invocation)).willThrow(new RpcException(RpcException.TIMEOUT_EXCEPTION, "Mock Timeout"));
+        given(invoker2.isAvailable()).willReturn(true);
+        given(invoker2.getUrl()).willReturn(url);
+        given(invoker2.getInterface()).willReturn(FailoverClusterInvokerTest.class);
+
+        FailoverClusterInvoker<FailoverClusterInvokerTest> invoker = new FailoverClusterInvoker<FailoverClusterInvokerTest>(dic);
+        try {
+            Result ret = invoker.invoke(invocation);
+            assertSame(result, ret);
+            fail();
+        } catch (RpcException expected) {
+            assertTrue(expected.isTimeout());
+            assertTrue(expected.getMessage().equals("Mock Timeout"));
         }
     }
 
