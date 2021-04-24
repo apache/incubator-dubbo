@@ -103,20 +103,6 @@ public class EtcdMetadataReportTest {
     }
 
     @Test
-    public void testStoreConsumer() throws Exception {
-        String version = "1.0.0";
-        String group = null;
-        String application = "etc-metadata-report-consumer-test";
-        MetadataIdentifier consumerIdentifier = storeConsumer(etcdMetadataReport, TEST_SERVICE, version, group, application);
-
-        CompletableFuture<GetResponse> response = etcdClientForTest.getKVClient().get(ByteSequence.from(
-                etcdMetadataReport.getNodeKey(consumerIdentifier), StandardCharsets.UTF_8));
-        String fileContent = response.get().getKvs().get(0).getValue().toString(StandardCharsets.UTF_8);
-        Assertions.assertNotNull(fileContent);
-        Assertions.assertEquals(fileContent, "{\"paramConsumerTest\":\"etcdConsumer\"}");
-    }
-
-    @Test
     public void testDoSaveMetadata() throws ExecutionException, InterruptedException {
         String version = "1.0.0";
         String group = null;
@@ -248,14 +234,4 @@ public class EtcdMetadataReportTest {
         return url;
     }
 
-    private MetadataIdentifier storeConsumer(EtcdMetadataReport etcdMetadataReport, String interfaceName,
-                                             String version, String group, String application) throws InterruptedException {
-
-        MetadataIdentifier consumerIdentifier = new MetadataIdentifier(interfaceName, version, group, CONSUMER_SIDE, application);
-        Map<String, String> tmp = new HashMap<>();
-        tmp.put("paramConsumerTest", "etcdConsumer");
-        etcdMetadataReport.storeConsumerMetadata(consumerIdentifier, tmp);
-        Thread.sleep(1000);
-        return consumerIdentifier;
-    }
 }

@@ -43,7 +43,6 @@ public class MockMetadataReport implements MetadataReport {
     public ConcurrentMap<MetadataIdentifier, ServiceDefinition>      providerMetadata  = new ConcurrentHashMap<>();
     public ConcurrentMap<SubscriberMetadataIdentifier, MetadataInfo> appMetadata       = new ConcurrentHashMap<>();
     public ConcurrentMap<String, Set<String>>                        appMapping        = new ConcurrentHashMap<>();
-    public ConcurrentMap<MetadataIdentifier, Map<String, String>>    consumerMetadata  = new ConcurrentHashMap<>();
     public ConcurrentMap<ServiceMetadataIdentifier, List<String>>    serviceMetadata   = new ConcurrentHashMap<>();
     public ConcurrentMap<SubscriberMetadataIdentifier, Set<String>>  subscribeMetadata = new ConcurrentHashMap<>();
 
@@ -85,11 +84,6 @@ public class MockMetadataReport implements MetadataReport {
     }
 
     @Override
-    public void storeConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, Map<String, String> serviceParameterMap) {
-        consumerMetadata.put(consumerMetadataIdentifier, serviceParameterMap);
-    }
-
-    @Override
     public List<String> getExportedURLs(ServiceMetadataIdentifier metadataIdentifier) {
         return serviceMetadata.get(metadataIdentifier);
     }
@@ -124,7 +118,6 @@ public class MockMetadataReport implements MetadataReport {
         providerMetadata.clear();
         appMetadata.clear();
         appMapping.clear();
-        consumerMetadata.clear();
         serviceMetadata.clear();
         subscribeMetadata.clear();
     }

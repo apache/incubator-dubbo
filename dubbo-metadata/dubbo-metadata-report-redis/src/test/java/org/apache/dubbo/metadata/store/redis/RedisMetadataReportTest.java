@@ -138,41 +138,6 @@ public class RedisMetadataReportTest {
         }
     }
 
-    @Test
-    public void testAsyncStoreConsumer() throws ClassNotFoundException {
-        testStoreConsumer(redisMetadataReport, "1.0.0.redis.md.c1", 3000);
-    }
-
-    @Test
-    public void testSyncStoreConsumer() throws ClassNotFoundException {
-        testStoreConsumer(syncRedisMetadataReport, "1.0.0.redis.md.c2", 3);
-    }
-
-    private void testStoreConsumer(RedisMetadataReport redisMetadataReport, String version, long moreTime) throws ClassNotFoundException {
-        String interfaceName = "org.apache.dubbo.metadata.store.redis.RedisMetadata4TstService";
-        String group = null;
-        String application = "vic.redis.md";
-        MetadataIdentifier consumerMetadataIdentifier = storeConsumer(redisMetadataReport, interfaceName, version, group, application);
-        Jedis jedis = null;
-        try {
-            jedis = redisMetadataReport.pool.getResource();
-            String keyTmp = consumerMetadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY);
-            String value = jedis.get(keyTmp);
-            if (value == null) {
-                Thread.sleep(moreTime);
-                value = jedis.get(keyTmp);
-            }
-            Assertions.assertEquals(value, "{\"paramConsumerTest\":\"redisCm\"}");
-        } catch (Throwable e) {
-            throw new RpcException("Failed to put to redis . cause: " + e.getMessage(), e);
-        } finally {
-            if (jedis != null) {
-                jedis.del(consumerMetadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY));
-            }
-            redisMetadataReport.pool.close();
-        }
-    }
-
     private MetadataIdentifier storePrivider(RedisMetadataReport redisMetadataReport, String interfaceName, String version, String group, String application) throws ClassNotFoundException {
         URL url = URL.valueOf("xxx://" + NetUtils.getLocalAddress().getHostName() + ":4444/" + interfaceName + "?paramTest=redisTest&version=" + version + "&application="
                 + application + (group == null ? "" : "&group=" + group));
@@ -188,24 +153,6 @@ public class RedisMetadataReportTest {
             e.printStackTrace();
         }
         return providerMetadataIdentifier;
-    }
-
-    private MetadataIdentifier storeConsumer(RedisMetadataReport redisMetadataReport, String interfaceName, String version, String group, String application) throws ClassNotFoundException {
-        URL url = URL.valueOf("xxx://" + NetUtils.getLocalAddress().getHostName() + ":4444/" + interfaceName + "?version=" + version + "&application="
-                + application + (group == null ? "" : "&group=" + group));
-
-        MetadataIdentifier consumerMetadataIdentifier = new MetadataIdentifier(interfaceName, version, group, CONSUMER_SIDE, application);
-        Class interfaceClass = Class.forName(interfaceName);
-
-        Map<String, String> tmp = new HashMap<>();
-        tmp.put("paramConsumerTest", "redisCm");
-        redisMetadataReport.storeConsumerMetadata(consumerMetadataIdentifier, tmp);
-        try {
-            Thread.sleep(300);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        return consumerMetadataIdentifier;
     }
 
     @Test

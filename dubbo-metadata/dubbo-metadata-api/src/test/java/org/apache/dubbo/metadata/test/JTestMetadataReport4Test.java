@@ -54,11 +54,6 @@ public class JTestMetadataReport4Test extends AbstractMetadataReport {
     }
 
     @Override
-    protected void doStoreConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, String serviceParameterString) {
-        store.put(consumerMetadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), serviceParameterString);
-    }
-
-    @Override
     protected void doSaveMetadata(ServiceMetadataIdentifier metadataIdentifier, URL url) {
         store.put(metadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), url.toFullString());
     }

@@ -82,11 +82,6 @@ public class EtcdMetadataReport extends AbstractMetadataReport {
     }
 
     @Override
-    protected void doStoreConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, String value) {
-        storeMetadata(consumerMetadataIdentifier, value);
-    }
-
-    @Override
     protected void doSaveMetadata(ServiceMetadataIdentifier serviceMetadataIdentifier, URL url) {
         String key = getNodeKey(serviceMetadataIdentifier);
         if (!etcdClient.put(key, URL.encode(url.toFullString()))) {

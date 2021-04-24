@@ -88,11 +88,6 @@ public class RedisMetadataReport extends AbstractMetadataReport {
     }
 
     @Override
-    protected void doStoreConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, String value) {
-        this.storeMetadata(consumerMetadataIdentifier, value);
-    }
-
-    @Override
     protected void doSaveMetadata(ServiceMetadataIdentifier serviceMetadataIdentifier, URL url) {
         this.storeMetadata(serviceMetadataIdentifier, URL.encode(url.toFullString()));
     }

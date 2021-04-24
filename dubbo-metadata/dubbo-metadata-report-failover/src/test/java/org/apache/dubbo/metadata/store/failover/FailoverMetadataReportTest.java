@@ -69,13 +69,6 @@ public class FailoverMetadataReportTest {
             Assertions.assertNotNull(holder.report.getServiceDefinition(identifier));
         }
 
-        HashMap parameterMap = new HashMap();
-        report.storeConsumerMetadata(identifier, parameterMap);
-        // assert all metadata report write already.
-        for (FailoverMetadataReport.MetadataReportHolder holder : report.getProxyReports()) {
-            Assertions.assertEquals(parameterMap, ((MockMetadataReport) holder.report).consumerMetadata.get(identifier));
-        }
-
         SubscriberMetadataIdentifier subscribeIdentifier = new SubscriberMetadataIdentifier("test", "1.0");
         MetadataInfo metadataInfo = new MetadataInfo(subscribeIdentifier.getApplication(), subscribeIdentifier.getRevision(), null);
         report.publishAppMetadata(subscribeIdentifier, metadataInfo);
@@ -137,12 +130,6 @@ public class FailoverMetadataReportTest {
         Assertions.assertNotNull(report.getServiceDefinition(identifier));
         Assertions.assertNotNull(localReport.getServiceDefinition(identifier));
         Assertions.assertNull(failoverReport.getServiceDefinition(identifier));
-
-        HashMap parameterMap = new HashMap();
-        report.storeConsumerMetadata(identifier, parameterMap);
-        // assert local metadata report write already.
-        Assertions.assertEquals(parameterMap, ((MockMetadataReport) localReport).consumerMetadata.get(identifier));
-        Assertions.assertNotEquals(parameterMap, ((MockMetadataReport) failoverReport).consumerMetadata.get(identifier));
 
         SubscriberMetadataIdentifier subscribeIdentifier = new SubscriberMetadataIdentifier("test", "1.0");
         MetadataInfo metadataInfo = new MetadataInfo(subscribeIdentifier.getApplication(), subscribeIdentifier.getRevision(), null);

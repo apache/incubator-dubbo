@@ -97,9 +97,6 @@ public class RemoteMetadataServiceImpl {
         if (PROVIDER_SIDE.equalsIgnoreCase(side)) {
             //TODO, the params part is duplicate with that stored by exportURL(url), can be further optimized in the future.
             publishProvider(url);
-        } else {
-            //TODO, only useful for ops showing the url parameters, this is duplicate with subscribeURL(url), can be removed in the future.
-            publishConsumer(url);
         }
     }
 
@@ -129,15 +126,4 @@ public class RemoteMetadataServiceImpl {
             logger.error("publishProvider getServiceDescriptor error. providerUrl: " + providerUrl.toFullString(), e);
         }
     }
-
-    private void publishConsumer(URL consumerURL) throws RpcException {
-        final URL url = consumerURL.removeParameters(PID_KEY, TIMESTAMP_KEY, Constants.BIND_IP_KEY,
-                Constants.BIND_PORT_KEY, TIMESTAMP_KEY);
-        getMetadataReports().forEach((registryKey, config) -> {
-            config.storeConsumerMetadata(new MetadataIdentifier(url.getServiceInterface(),
-                    url.getParameter(VERSION_KEY), url.getParameter(GROUP_KEY), CONSUMER_SIDE,
-                    url.getParameter(APPLICATION_KEY)), url.getParameters());
-        });
-    }
-
 }
