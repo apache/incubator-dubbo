@@ -192,7 +192,7 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
         }
 
         CuratorWatcher watcher = watcherCaches.computeIfAbsent(path, key ->
-                new ZookeeperServiceDiscoveryChangeWatcher(this, serviceName, listener));
+                new ZookeeperServiceDiscoveryChangeWatcher(this, serviceName, path, listener));
         try {
             curatorFramework.getChildren().usingWatcher(watcher).forPath(path);
         } catch (KeeperException.NoNodeException e) {
@@ -207,5 +207,9 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
 
     private String buildServicePath(String serviceName) {
         return rootPath + "/" + serviceName;
+    }
+
+    protected CuratorFramework getCuratorFramework() {
+        return curatorFramework;
     }
 }

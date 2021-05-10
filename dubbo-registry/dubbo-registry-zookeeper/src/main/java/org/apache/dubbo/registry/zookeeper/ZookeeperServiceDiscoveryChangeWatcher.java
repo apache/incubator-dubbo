@@ -16,13 +16,19 @@
  */
 package org.apache.dubbo.registry.zookeeper;
 
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
+import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 
 import org.apache.curator.framework.api.CuratorWatcher;
+import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
+
+import java.util.List;
 
 import static org.apache.zookeeper.Watcher.Event.EventType.NodeChildrenChanged;
 import static org.apache.zookeeper.Watcher.Event.EventType.NodeDataChanged;
@@ -35,9 +41,14 @@ import static org.apache.zookeeper.Watcher.Event.EventType.NodeDataChanged;
  * @since 2.7.5
  */
 public class ZookeeperServiceDiscoveryChangeWatcher implements CuratorWatcher {
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+
     private ServiceInstancesChangedListener listener;
 
     private final ZookeeperServiceDiscovery zookeeperServiceDiscovery;
+
+    private final String path;
 
     private boolean keepWatching = true;
 
@@ -45,9 +56,11 @@ public class ZookeeperServiceDiscoveryChangeWatcher implements CuratorWatcher {
 
     public ZookeeperServiceDiscoveryChangeWatcher(ZookeeperServiceDiscovery zookeeperServiceDiscovery,
                                                   String serviceName,
+                                                  String path,
                                                   ServiceInstancesChangedListener listener) {
         this.zookeeperServiceDiscovery = zookeeperServiceDiscovery;
         this.serviceName = serviceName;
+        this.path = path;
         this.listener = listener;
     }
 
@@ -58,10 +71,24 @@ public class ZookeeperServiceDiscoveryChangeWatcher implements CuratorWatcher {
 
         if (NodeChildrenChanged.equals(eventType) || NodeDataChanged.equals(eventType)) {
             if (shouldKeepWatching()) {
-                listener.onEvent(new ServiceInstancesChangedEvent(serviceName, zookeeperServiceDiscovery.getInstances(serviceName)));
-                zookeeperServiceDiscovery.registerServiceWatcher(serviceName, listener);
-                zookeeperServiceDiscovery.dispatchServiceInstancesChangedEvent(serviceName);
+                List<ServiceInstance> instances = zookeeperServiceDiscovery.getInstances(serviceName);
+                listener.onEvent(new ServiceInstancesChangedEvent(serviceName, instances));
+                zookeeperServiceDiscovery.dispatchServiceInstancesChangedEvent(serviceName, instances);
+                registerSelfWatcher();
             }
+        }
+    }
+
+    private void registerSelfWatcher() {
+        try {
+            zookeeperServiceDiscovery.getCuratorFramework().getChildren().usingWatcher(this).forPath(path);
+        } catch (KeeperException.NoNodeException e) {
+            // ignored
+            if (logger.isErrorEnabled()) {
+                logger.error(e.getMessage());
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
         }
     }
 
