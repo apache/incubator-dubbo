@@ -156,7 +156,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
 
         prepareReferenceBean(referencedBeanName, referenceBean, localServiceBean);
 
-        registerReferenceBean(referencedBeanName, referenceBean, attributes, localServiceBean, injectedType);
+        registerReferenceBean(referencedBeanName, referenceBeanName, localServiceBean);
 
         cacheInjectedReferenceBean(referenceBean, injectedElement);
 
@@ -167,19 +167,15 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
      * Register an instance of {@link ReferenceBean} as a Spring Bean
      *
      * @param referencedBeanName The name of bean that annotated Dubbo's {@link Service @Service} in the Spring {@link ApplicationContext}
-     * @param referenceBean      the instance of {@link ReferenceBean} is about to register into the Spring {@link ApplicationContext}
-     * @param attributes         the {@link AnnotationAttributes attributes} of {@link Reference @Reference}
+     * @param referenceBeanName  The name of bean that annotated Dubbo's {@link Reference @Reference} in the Spring {@link ApplicationContext}
      * @param localServiceBean   Is Local Service bean or not
-     * @param interfaceClass     the {@link Class class} of Service interface
      * @since 2.7.3
      */
-    private void registerReferenceBean(String referencedBeanName, ReferenceBean referenceBean,
-                                       AnnotationAttributes attributes,
-                                       boolean localServiceBean, Class<?> interfaceClass) {
+    private void registerReferenceBean(String referencedBeanName, String referenceBeanName, boolean localServiceBean) {
 
         ConfigurableListableBeanFactory beanFactory = getBeanFactory();
 
-        String beanName = getReferenceBeanName(attributes, interfaceClass);
+        ReferenceBean referenceBean = referenceBeanCache.get(referenceBeanName);
 
         if (localServiceBean) {  // If @Service bean is local one
             /**
@@ -191,10 +187,10 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
             // The name of bean annotated @Service
             String serviceBeanName = runtimeBeanReference.getBeanName();
             // register Alias rather than a new bean name, in order to reduce duplicated beans
-            beanFactory.registerAlias(serviceBeanName, beanName);
+            beanFactory.registerAlias(serviceBeanName, referenceBeanName);
         } else { // Remote @Service Bean
-            if (!beanFactory.containsBean(beanName)) {
-                beanFactory.registerSingleton(beanName, referenceBean);
+            if (!beanFactory.containsBean(referenceBeanName)) {
+                beanFactory.registerSingleton(referenceBeanName, referenceBean);
             }
         }
     }
