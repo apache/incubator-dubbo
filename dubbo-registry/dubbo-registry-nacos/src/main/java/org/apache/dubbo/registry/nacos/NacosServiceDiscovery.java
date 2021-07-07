@@ -50,8 +50,6 @@ import static org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils.toIns
  */
 public class NacosServiceDiscovery extends AbstractServiceDiscovery {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
-
     private String group;
 
     private NacosNamingServiceWrapper namingService;
@@ -81,12 +79,10 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
 
     @Override
     public void doUpdate(ServiceInstance serviceInstance) {
-        if (this.serviceInstance == null) {
-            register(serviceInstance);
-        } else {
+        if (this.serviceInstance != null) {
             unregister(serviceInstance);
-            register(serviceInstance);
         }
+        register(serviceInstance);
     }
 
     @Override
