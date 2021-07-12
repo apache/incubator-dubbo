@@ -33,7 +33,9 @@ public class MigrationRuleHandler<T> {
     private MigrationStep currentStep;
 
     public void doMigrate(String rawRule) {
-        MigrationRule rule = MigrationRule.parse(rawRule);
+        String defaultStep = MigrationRule.getDefaultStep(migrationInvoker.getRegistryUrl());
+
+        MigrationRule rule = MigrationRule.parse(rawRule, defaultStep);
 
         if (null != currentStep && currentStep.equals(rule.getStep())) {
             if (logger.isInfoEnabled()) {

@@ -61,7 +61,8 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
     
     private static final String PREFER_REGISTRY_WITH_ZONE_KEY = REGISTRY_KEY + "." + ZONE_KEY;
 
-    private final LoadBalance loadBalanceAmongRegistries = ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(LOADBALANCE_AMONG_REGISTRIES);
+    private final LoadBalance loadBalanceAmongRegistries =
+            ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(LOADBALANCE_AMONG_REGISTRIES);
 
     public ZoneAwareClusterInvoker(Directory<T> directory) {
         super(directory);
@@ -84,7 +85,8 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
         if (StringUtils.isNotEmpty(zone)) {
             for (Invoker<T> invoker : invokers) {
                 ClusterInvoker<T> clusterInvoker = (ClusterInvoker<T>) invoker;
-                if (clusterInvoker.isAvailable() && zone.equals(clusterInvoker.getRegistryUrl().getParameter(PREFER_REGISTRY_WITH_ZONE_KEY))) {
+                if (clusterInvoker.isAvailable() &&
+                        zone.equals(clusterInvoker.getRegistryUrl().getParameter(PREFER_REGISTRY_WITH_ZONE_KEY))) {
                     return clusterInvoker.invoke(invocation);
                 }
             }
@@ -92,7 +94,8 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
             if (StringUtils.isNotEmpty(force) && "true".equalsIgnoreCase(force)) {
                 throw new IllegalStateException("No registry instance in zone or no available providers in the registry, zone: "
                         + zone
-                        + ", registries: " + invokers.stream().map(invoker -> ((MockClusterInvoker<T>) invoker).getRegistryUrl().toString()).collect(Collectors.joining(",")));
+                        + ", registries: " + invokers.stream().map(invoker -> ((MockClusterInvoker<T>) invoker).getRegistryUrl().toString())
+                        .collect(Collectors.joining(",")));
             }
         }
 
@@ -154,7 +157,8 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
             // inconsistency rule
             if (!rule.equals(migrationClusterInvoker.getMigrationRule())) {
-                rule = MigrationRule.queryRule();
+                String defaultStep = MigrationRule.getDefaultStep(migrationClusterInvoker.getRegistryUrl());
+                rule = MigrationRule.queryRule(defaultStep);
                 break;
             }
         }
@@ -185,7 +189,8 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
                 }
 
                 if (logger.isDebugEnabled()) {
-                    logger.debug("step is APPLICATION_FIRST " + (serviceInvokers.isEmpty() ? "serviceInvokers is empty" : "shouldMigrate false") + " get interfaceInvokers");
+                    logger.debug("step is APPLICATION_FIRST " +
+                            (serviceInvokers.isEmpty() ? "serviceInvokers is empty" : "shouldMigrate false") + " get interfaceInvokers");
                 }
 
                 return interfaceInvokers;
@@ -206,7 +211,8 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
 
     private boolean shouldMigrate(boolean addressChanged, List<Invoker<T>> serviceInvokers, List<Invoker<T>> interfaceInvokers) {
-        Set<MigrationClusterComparator> detectors = ExtensionLoader.getExtensionLoader(MigrationClusterComparator.class).getSupportedExtensionInstances();
+        Set<MigrationClusterComparator> detectors =
+                ExtensionLoader.getExtensionLoader(MigrationClusterComparator.class).getSupportedExtensionInstances();
         if (detectors != null && !detectors.isEmpty()) {
             return detectors.stream().allMatch(s -> s.shouldMigrate(interfaceInvokers, serviceInvokers));
         }

@@ -16,8 +16,10 @@
  */
 package org.apache.dubbo.rpc.cluster.support.migration;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
@@ -57,14 +59,14 @@ public class MigrationRule {
         this.step = step;
     }
 
-    public static MigrationRule parse(String rawRule) {
+    public static MigrationRule parse(String rawRule, String defaultStep) {
         if (null == configuration) {
-            return getMigrationRule(null);
+            return getMigrationRule(null, defaultStep);
         }
 
         if (StringUtils.isBlank(rawRule) || INIT.equals(rawRule)) {
-            String step = (String)configuration.getInternalProperty(DUBBO_SERVICEDISCOVERY_MIGRATION_KEY);
-            return getMigrationRule(step);
+            String step = (String) configuration.getInternalProperty(DUBBO_SERVICEDISCOVERY_MIGRATION_KEY);
+            return getMigrationRule(step, defaultStep);
 
         }
 
@@ -73,18 +75,26 @@ public class MigrationRule {
         return yaml.load(rawRule);
     }
 
-    public static MigrationRule queryRule() {
+    public static String getDefaultStep(URL registryUrl) {
+        return UrlUtils.isServiceDiscoveryRegistryType(registryUrl) ? MigrationStep.APPLICATION_FIRST.name() :
+                MigrationStep.FORCE_INTERFACE.name();
+    }
+
+    public static MigrationRule queryRule(String defaultStep) {
         if (null == configuration) {
-            return getMigrationRule(null);
+            return getMigrationRule(null, defaultStep);
         }
 
         String rawRule = configuration.getConfig(MigrationRule.RULE_KEY, DUBBO_SERVICEDISCOVERY_MIGRATION_GROUP);
-        return parse(rawRule);
+        return parse(rawRule, defaultStep);
     }
 
-    private  static MigrationRule getMigrationRule(String step) {
+    private static MigrationRule getMigrationRule(String step, String defaultStep) {
+        if (StringUtils.isEmpty(defaultStep)) {
+            defaultStep = MigrationStep.FORCE_INTERFACE.name();
+        }
         MigrationRule rule = new MigrationRule();
-        rule.setStep(Enum.valueOf(MigrationStep.class, StringUtils.isBlank(step) ? MigrationStep.APPLICATION_FIRST.name() : step));
+        rule.setStep(Enum.valueOf(MigrationStep.class, StringUtils.isBlank(step) ? defaultStep : step));
         return rule;
     }
 }
