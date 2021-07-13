@@ -103,6 +103,8 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
      */
     public ReferenceAnnotationBeanPostProcessor() {
         super(DubboReference.class, Reference.class, com.alibaba.dubbo.config.annotation.Reference.class);
+        setClassValuesAsString(false);
+        setNestedAnnotationsAsMap(false);
     }
 
     /**

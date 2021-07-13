@@ -150,7 +150,7 @@
         <fabric8_kubernetes_version>4.10.3</fabric8_kubernetes_version>
 
         <!-- Alibaba -->
-        <alibaba_spring_context_support_version>1.0.10</alibaba_spring_context_support_version>
+        <alibaba_spring_context_support_version>1.0.11</alibaba_spring_context_support_version>
 
         <jaxb_version>2.2.7</jaxb_version>
         <activation_version>1.2.0</activation_version>
