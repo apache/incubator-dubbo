@@ -26,6 +26,11 @@ public class HessianServiceImpl implements HessianService {
     private boolean called;
 
     public String sayHello(String name) {
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         called = true;
         return "Hello, " + name;
     }

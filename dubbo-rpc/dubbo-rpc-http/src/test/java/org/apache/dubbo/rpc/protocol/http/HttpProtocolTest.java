@@ -29,6 +29,9 @@ import org.apache.dubbo.rpc.service.GenericService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -89,4 +92,22 @@ public class HttpProtocolTest {
         exporter.unexport();
     }
 
+    @Test
+    public void testGenericAsyncInvoke() throws InterruptedException, ExecutionException {
+        HttpServiceImpl server = new HttpServiceImpl();
+        Assertions.assertFalse(server.isCalled());
+        ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+        Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+        int port = NetUtils.getAvailablePort();
+        URL url = URL.valueOf("http://127.0.0.1:" + port + "/" + HttpService.class.getName() + "?release=2.7.0");
+        Exporter<HttpService> exporter = protocol.export(proxyFactory.getInvoker(server, HttpService.class, url));
+        Invoker<GenericService> invoker = protocol.refer(GenericService.class, url);
+        GenericService client = proxyFactory.getProxy(invoker, true);
+        CompletableFuture future = client.$invokeAsync("blockingSayHello", new String[]{"java.lang.String"}, new Object[]{"haha"});
+        Assertions.assertFalse(server.isCalled());
+        Assertions.assertEquals("Hello, haha", future.get());
+        Assertions.assertTrue(server.isCalled());
+        invoker.destroy();
+        exporter.unexport();
+    }
 }

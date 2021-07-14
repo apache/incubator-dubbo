@@ -18,6 +18,7 @@ package org.apache.dubbo.common.bytecode;
 
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
+import org.apache.dubbo.rpc.service.GenericService;
 
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
@@ -33,6 +34,7 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE_ASYNC;
 import static org.apache.dubbo.common.constants.CommonConstants.MAX_PROXY_COUNT;
 
 /**
@@ -187,6 +189,15 @@ public abstract class Proxy {
                     if (worked.contains(desc) || Modifier.isStatic(method.getModifiers())) {
                         continue;
                     }
+
+                    if (ics[i].isInterface() && Modifier.isStatic(method.getModifiers())) {
+                        continue;
+                    }
+                    // GenericService.$invokeAsync() wraps the result of $invoke() as CompletableFuture, does not need to be proxied
+                    if (method.getDeclaringClass() == GenericService.class && method.getName().equals($INVOKE_ASYNC)) {
+                        continue;
+                    }
+                  
                     worked.add(desc);
 
                     int ix = methods.size();

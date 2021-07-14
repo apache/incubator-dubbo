@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.dubbo.support;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 
 /**
@@ -25,13 +26,15 @@ import java.util.Set;
  */
 
 public interface DemoService {
-    void sayHello(String name);
+    String sayHello(String name);
 
     Set<String> keys(Map<String, String> map);
 
     String echo(String text);
 
     Map echo(Map map);
+
+    CompletableFuture<String> sayHelloAsync(String text);
 
     long timestamp();
 

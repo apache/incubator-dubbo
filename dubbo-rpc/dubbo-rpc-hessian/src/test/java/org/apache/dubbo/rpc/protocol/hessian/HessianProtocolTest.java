@@ -41,6 +41,8 @@ import org.junit.jupiter.api.Test;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -81,6 +83,25 @@ public class HessianProtocolTest {
         String result = (String) client.$invoke("sayHello", new String[]{"java.lang.String"}, new Object[]{"haha"});
         Assertions.assertTrue(server.isCalled());
         Assertions.assertEquals("Hello, haha", result);
+        invoker.destroy();
+        exporter.unexport();
+    }
+
+    @Test
+    public void testGenericAsyncInvoke() throws ExecutionException, InterruptedException {
+        HessianServiceImpl server = new HessianServiceImpl();
+        Assertions.assertFalse(server.isCalled());
+        ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+        Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+        int port = NetUtils.getAvailablePort();
+        URL url = URL.valueOf("hessian://127.0.0.1:" + port + "/" + HessianService.class.getName() + "?version=1.0.0");
+        Exporter<HessianService> exporter = protocol.export(proxyFactory.getInvoker(server, HessianService.class, url));
+        Invoker<GenericService> invoker = protocol.refer(GenericService.class, url);
+        GenericService client = proxyFactory.getProxy(invoker, true);
+        CompletableFuture future = client.$invokeAsync("sayHello", new String[]{"java.lang.String"}, new Object[]{"haha"});
+        Assertions.assertFalse(server.isCalled());
+        Assertions.assertEquals("Hello, haha", future.get());
+        Assertions.assertTrue(server.isCalled());
         invoker.destroy();
         exporter.unexport();
     }

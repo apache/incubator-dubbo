@@ -21,17 +21,42 @@ import org.apache.dubbo.rpc.RpcContext;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * DemoServiceImpl
  */
 public class DemoServiceImpl implements DemoService {
+    private volatile boolean called;
+
     public DemoServiceImpl() {
         super();
     }
 
-    public void sayHello(String name) {
+    public String sayHello(String name) {
         System.out.println("hello " + name);
+        return "Hello, " + name;
+    }
+
+    @Override
+    public CompletableFuture<String> sayHelloAsync(String name) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            called = true;
+            return "Hello, " + name;
+        });
+    }
+
+    public void resetCalled() {
+        this.called = false;
+    }
+
+    public boolean isCalled() {
+        return called;
     }
 
     public String echo(String text) {

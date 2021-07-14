@@ -18,12 +18,38 @@ package org.apache.dubbo.rpc.protocol.http;
 
 import org.apache.dubbo.rpc.RpcContext;
 
+import java.util.concurrent.CompletableFuture;
+
 public class HttpServiceImpl implements HttpService {
-    private boolean called;
+    private volatile boolean called;
 
     public String sayHello(String name) {
         called = true;
         return "Hello, " + name;
+    }
+
+    @Override
+    public String blockingSayHello(String name) {
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        called = true;
+        return "Hello, " + name;
+    }
+
+    @Override
+    public CompletableFuture<String> sayHelloAsync(String name) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            called = true;
+            return "Hello, " + name;
+        });
     }
 
     public boolean isCalled() {

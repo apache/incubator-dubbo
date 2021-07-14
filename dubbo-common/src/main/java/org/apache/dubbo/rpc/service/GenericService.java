@@ -37,12 +37,29 @@ public interface GenericService {
      */
     Object $invoke(String method, String[] parameterTypes, Object[] args) throws GenericException;
 
+    /**
+     * Call target method on the consumer side asynchronously, the provider side should not be called the $invokeAsync method.
+     *
+     * @param method         Method name, e.g. findPerson. If there are overridden methods, parameter info is
+     *                       required, e.g. findPerson(java.lang.String)
+     * @param parameterTypes Parameter types
+     * @param args           Arguments
+     * @return invocation return value
+     * @throws GenericException potential exception thrown from the invocation
+     */
     default CompletableFuture<Object> $invokeAsync(String method, String[] parameterTypes, Object[] args) throws GenericException {
-        Object object = $invoke(method, parameterTypes, args);
-        if (object instanceof CompletableFuture) {
-            return (CompletableFuture<Object>) object;
-        }
-        return CompletableFuture.completedFuture(object);
+        // Use a custom Executor?
+        return CompletableFuture.supplyAsync(() -> {
+            Object object = $invoke(method, parameterTypes, args);
+            try {
+                if (object instanceof CompletableFuture) {
+                    return ((CompletableFuture) object).get();
+                }
+            } catch (Exception e) {
+                throw new GenericException(e);
+            }
+            return object;
+        });
     }
 
 }

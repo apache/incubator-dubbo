@@ -16,8 +16,14 @@
  */
 package org.apache.dubbo.rpc.protocol.http;
 
+import java.util.concurrent.CompletableFuture;
+
 public interface HttpService {
     String sayHello(String name);
+
+    String blockingSayHello(String name);
+
+    CompletableFuture<String> sayHelloAsync(String name);
 
     void timeOut(int millis);
 

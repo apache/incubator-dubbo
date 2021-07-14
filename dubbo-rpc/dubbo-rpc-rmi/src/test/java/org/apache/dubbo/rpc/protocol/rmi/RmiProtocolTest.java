@@ -32,6 +32,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -136,6 +139,19 @@ public class RmiProtocolTest {
         GenericService client = proxy.getProxy(invoker, true);
         String result = (String) client.$invoke("sayHi", new String[]{"java.lang.String"}, new Object[]{"haha"});
         Assertions.assertEquals("Hi, haha", result);
+        invoker.destroy();
+        exporter.unexport();
+    }
+
+    @Test
+    public void testGenericAsyncInvoke() throws ExecutionException, InterruptedException {
+        DemoService service = new DemoServiceImpl();
+        URL url = URL.valueOf("rmi://127.0.0.1:" + availablePort + "/" + DemoService.class.getName() + "?release=2.7.0");
+        Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(service, DemoService.class, url));
+        Invoker<GenericService> invoker = protocol.refer(GenericService.class, url);
+        GenericService client = proxy.getProxy(invoker, true);
+        CompletableFuture<Object> future = client.$invokeAsync("sayHi", new String[]{"java.lang.String"}, new Object[]{"haha"});
+        Assertions.assertEquals("Hi, haha", future.get());
         invoker.destroy();
         exporter.unexport();
     }
