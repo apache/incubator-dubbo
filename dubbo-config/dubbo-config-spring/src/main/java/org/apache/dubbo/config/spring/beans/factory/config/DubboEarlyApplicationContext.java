@@ -16,17 +16,17 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.config;
 
+import com.alibaba.spring.beans.factory.config.GenericBeanPostProcessorAdapter;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.context.ConfigManager;
-
-import com.alibaba.spring.beans.factory.config.GenericBeanPostProcessorAdapter;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.annotation.CommonAnnotationBeanPostProcessor;
+import org.springframework.core.PriorityOrdered;
 
 import javax.annotation.PostConstruct;
 
@@ -42,47 +42,35 @@ import javax.annotation.PostConstruct;
  * @see GenericBeanPostProcessorAdapter
  * @since 2.7.9
  */
-public class DubboConfigEarlyInitializationPostProcessor extends GenericBeanPostProcessorAdapter<AbstractConfig>{
+public class DubboEarlyApplicationContext implements BeanDefinitionRegistryPostProcessor, PriorityOrdered {
 
-    private static final Log logger = LogFactory.getLog(DubboConfigEarlyInitializationPostProcessor.class.getName());
+    public static final String BEAN_NAME = "dubboEarlyApplicationContext";
 
     private DefaultListableBeanFactory beanFactory;
 
-    public DubboConfigEarlyInitializationPostProcessor(DefaultListableBeanFactory beanFactory){
-        this.beanFactory = beanFactory;
+    @Override
+    public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
+        this.beanFactory = unwrap(registry);
+        this.beanFactory.addBeanPostProcessor(new DubboConfigEarlyInitializationPostProcessor(this.beanFactory));
     }
 
     @Override
-    protected void processBeforeInitialization(AbstractConfig config, String beanName) throws BeansException {
-        if (this.beanFactory == null) {
-            if (logger.isErrorEnabled()) {
-                logger.error("Current Processor is not running in Spring container, next action will be skipped!");
-            }
-            return;
-        }
-
-        // If CommonAnnotationBeanPostProcessor is already registered,  the method addIntoConfigManager()
-        // will be invoked in Bean life cycle.
-        if (!hasRegisteredCommonAnnotationBeanPostProcessor()) {
-            if (logger.isWarnEnabled()) {
-                logger.warn("CommonAnnotationBeanPostProcessor is not registered yet, " +
-                        "the method addIntoConfigManager() will be invoked directly");
-            }
-            config.addIntoConfigManager();
+    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+        if (beanFactory == null) { // try again if postProcessBeanDefinitionRegistry method does not effect.
+            this.beanFactory = unwrap(beanFactory);
+            this.beanFactory.addBeanPostProcessor(new DubboConfigEarlyInitializationPostProcessor(this.beanFactory));
         }
     }
 
-    /**
-     * {@link DefaultListableBeanFactory} has registered {@link CommonAnnotationBeanPostProcessor} or not?
-     *
-     * @return if registered, return <code>true</code>, or <code>false</code>
-     */
-    private boolean hasRegisteredCommonAnnotationBeanPostProcessor() {
-        for (BeanPostProcessor beanPostProcessor : beanFactory.getBeanPostProcessors()) {
-            if (CommonAnnotationBeanPostProcessor.class.equals(beanPostProcessor.getClass())) {
-                return true;
-            }
+    private DefaultListableBeanFactory unwrap(Object registry) {
+        if (registry instanceof DefaultListableBeanFactory) {
+            return (DefaultListableBeanFactory) registry;
         }
-        return false;
+        return null;
+    }
+
+    @Override
+    public int getOrder() {
+        return HIGHEST_PRECEDENCE;
     }
 }
