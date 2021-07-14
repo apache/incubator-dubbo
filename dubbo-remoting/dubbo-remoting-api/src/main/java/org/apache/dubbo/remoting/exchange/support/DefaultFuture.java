@@ -142,11 +142,6 @@ public class DefaultFuture extends CompletableFuture<Object> {
             if (channel.equals(entry.getValue())) {
                 DefaultFuture future = getFuture(entry.getKey());
                 if (future != null && !future.isDone()) {
-                    ExecutorService futureExecutor = future.getExecutor();
-                    if (futureExecutor != null && !futureExecutor.isTerminated()) {
-                        futureExecutor.shutdownNow();
-                    }
-
                     Response disconnectResponse = new Response(future.getId());
                     disconnectResponse.setStatus(Response.CHANNEL_INACTIVE);
                     disconnectResponse.setErrorMessage("Channel " +
