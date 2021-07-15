@@ -53,7 +53,7 @@ public class MetadataReportInstance {
                     .removeParameter(METADATA_REPORT_KEY)
                     .build();
         }
-        url = url.addParameterIfAbsent(APPLICATION_KEY, ApplicationModel.getApplicationConfig().getName());
+        url = url.addParameterIfAbsent(APPLICATION_KEY, ApplicationModel.getName());
         String relatedRegistryId = config.getRegistry() == null ? DEFAULT_KEY : config.getRegistry();
 //        RegistryConfig registryConfig = ApplicationModel.getConfigManager().getRegistry(relatedRegistryId)
 //                .orElseThrow(() -> new IllegalStateException("Registry id " + relatedRegistryId + " does not exist."));

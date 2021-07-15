@@ -52,10 +52,6 @@ public class ServiceMetadata extends BaseServiceMetadata {
     public ServiceMetadata() {
     }
 
-    public String getServiceKey() {
-        return serviceKey;
-    }
-
     public Map<String, Object> getAttachments() {
         return attachments;
     }

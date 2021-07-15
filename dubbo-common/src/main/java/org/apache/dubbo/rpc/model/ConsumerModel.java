@@ -123,7 +123,7 @@ public class ConsumerModel {
     /* *************** Start, metadata compatible **************** */
 
     private ServiceMetadata serviceMetadata;
-    private Map<Method, ConsumerMethodModel> methodModels = new HashMap<>();
+    private Map<Method, MethodDescriptor> methodModels = new HashMap<>();
 
     public ConsumerModel(String serviceKey
             , Object proxyObject
@@ -152,7 +152,7 @@ public class ConsumerModel {
         }
         for (Class interfaceClass : interfaceList) {
             for (Method method : interfaceClass.getMethods()) {
-                methodModels.put(method, new ConsumerMethodModel(method));
+                methodModels.put(method, new MethodDescriptor(method));
             }
         }
     }
@@ -174,7 +174,7 @@ public class ConsumerModel {
      * @param method method object
      * @return method model
      */
-    public ConsumerMethodModel getMethodModel(Method method) {
+    public MethodDescriptor getMethodModel(Method method) {
         return methodModels.get(method);
     }
 
@@ -184,8 +184,8 @@ public class ConsumerModel {
      * @param method method object
      * @return method model
      */
-    public ConsumerMethodModel getMethodModel(String method) {
-        Optional<Map.Entry<Method, ConsumerMethodModel>> consumerMethodModelEntry = methodModels.entrySet().stream().filter(entry -> entry.getKey().getName().equals(method)).findFirst();
+    public MethodDescriptor getMethodModel(String method) {
+        Optional<Map.Entry<Method, MethodDescriptor>> consumerMethodModelEntry = methodModels.entrySet().stream().filter(entry -> entry.getKey().getName().equals(method)).findFirst();
         return consumerMethodModelEntry.map(Map.Entry::getValue).orElse(null);
     }
 
@@ -194,10 +194,10 @@ public class ConsumerModel {
      * @param argsType method arguments type
      * @return
      */
-    public ConsumerMethodModel getMethodModel(String method, String[] argsType) {
-        Optional<ConsumerMethodModel> consumerMethodModel = methodModels.entrySet().stream()
+    public MethodDescriptor getMethodModel(String method, String[] argsType) {
+        Optional<MethodDescriptor> consumerMethodModel = methodModels.entrySet().stream()
                 .filter(entry -> entry.getKey().getName().equals(method))
-                .map(Map.Entry::getValue).filter(methodModel -> Arrays.equals(argsType, methodModel.getParameterTypes()))
+                .map(Map.Entry::getValue).filter(methodModel -> Arrays.equals(argsType, methodModel.getCompatibleParamSignatures()))
                 .findFirst();
         return consumerMethodModel.orElse(null);
     }
@@ -207,7 +207,7 @@ public class ConsumerModel {
      *
      * @return method model list
      */
-    public List<ConsumerMethodModel> getAllMethodModels() {
+    public List<MethodDescriptor> getAllMethodModels() {
         return new ArrayList<>(methodModels.values());
     }
 

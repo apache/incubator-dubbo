@@ -129,7 +129,7 @@ public class ProviderModel {
     /* *************** Start, metadata compatible **************** */
 
     private ServiceMetadata serviceMetadata;
-    private final Map<String, List<ProviderMethodModel>> methods = new HashMap<String, List<ProviderMethodModel>>();
+    private final Map<String, List<MethodDescriptor>> methods = new HashMap<String, List<MethodDescriptor>>();
 
     public ProviderModel(String serviceKey,
                          Object serviceInstance,
@@ -155,19 +155,19 @@ public class ProviderModel {
         return this.serviceMetadata.getServiceKey();
     }
 
-    public List<ProviderMethodModel> getAllMethodModels() {
-        List<ProviderMethodModel> result = new ArrayList<ProviderMethodModel>();
-        for (List<ProviderMethodModel> models : methods.values()) {
+    public List<MethodDescriptor> getAllMethodModels() {
+        List<MethodDescriptor> result = new ArrayList<MethodDescriptor>();
+        for (List<MethodDescriptor> models : methods.values()) {
             result.addAll(models);
         }
         return result;
     }
 
-    public ProviderMethodModel getMethodModel(String methodName, String[] argTypes) {
-        List<ProviderMethodModel> methodModels = methods.get(methodName);
+    public MethodDescriptor getMethodModel(String methodName, String[] argTypes) {
+        List<MethodDescriptor> methodModels = methods.get(methodName);
         if (methodModels != null) {
-            for (ProviderMethodModel methodModel : methodModels) {
-                if (Arrays.equals(argTypes, methodModel.getMethodArgTypes())) {
+            for (MethodDescriptor methodModel : methodModels) {
+                if (Arrays.equals(argTypes, methodModel.getCompatibleParamSignatures())) {
                     return methodModel;
                 }
             }
@@ -175,8 +175,8 @@ public class ProviderModel {
         return null;
     }
 
-    public List<ProviderMethodModel> getMethodModelList(String methodName) {
-        List<ProviderMethodModel> resultList = methods.get(methodName);
+    public List<MethodDescriptor> getMethodModelList(String methodName) {
+        List<MethodDescriptor> resultList = methods.get(methodName);
         return resultList == null ? Collections.emptyList() : resultList;
     }
 
@@ -187,12 +187,12 @@ public class ProviderModel {
         for (Method method : methodsToExport) {
             ReflectUtils.makeAccessible(method);
 
-            List<ProviderMethodModel> methodModels = methods.get(method.getName());
+            List<MethodDescriptor> methodModels = methods.get(method.getName());
             if (methodModels == null) {
-                methodModels = new ArrayList<ProviderMethodModel>();
+                methodModels = new ArrayList<MethodDescriptor>();
                 methods.put(method.getName(), methodModels);
             }
-            methodModels.add(new ProviderMethodModel(method));
+            methodModels.add(new MethodDescriptor(method));
         }
     }
 

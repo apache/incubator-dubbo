@@ -19,7 +19,7 @@ package org.apache.dubbo.rpc;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
-import org.apache.dubbo.rpc.model.ConsumerMethodModel;
+import org.apache.dubbo.rpc.model.MethodDescriptor;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -330,7 +330,7 @@ public class AsyncRpcResult implements Result {
     }
 
     private static Result createDefaultValue(Invocation invocation) {
-        ConsumerMethodModel method = (ConsumerMethodModel) invocation.get(Constants.METHOD_MODEL);
+        MethodDescriptor method = (MethodDescriptor) invocation.get(Constants.METHOD_MODEL);
         return method != null ? new AppResponse(defaultReturn(method.getReturnClass())) : new AppResponse();
     }
 }
