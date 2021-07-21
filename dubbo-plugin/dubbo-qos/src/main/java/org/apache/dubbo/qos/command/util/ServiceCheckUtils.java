@@ -59,4 +59,24 @@ public class ServiceCheckUtils {
         }
         return num;
     }
+
+    //for the situation that QoS wants to query the address number of a consumer in all Registries
+    public static int getConsumerAddressNumInAllRegistries(ConsumerModel consumerModel){
+        int num = 0;
+
+        Collection<Registry> registries = AbstractRegistryFactory.getRegistries();
+        if(CollectionUtils.isNotEmpty(registries)){
+            for(Registry registry: registries){
+                AbstractRegistry abstractRegistry = (AbstractRegistry) registry;
+                for(Map.Entry<URL, Map<String, List<URL>>> entry: abstractRegistry.getNotified().entrySet()){
+                    if(entry.getKey().getServiceKey().equals(consumerModel.getServiceKey())){
+                        if(CollectionUtils.isNotEmptyMap(entry.getValue())){
+                            num += entry.getValue().size();
+                        }
+                    }
+                }
+            }
+        }
+        return num;
+    }
 }
