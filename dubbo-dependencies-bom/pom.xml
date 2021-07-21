@@ -172,6 +172,12 @@
         <maven_flatten_version>1.1.0</maven_flatten_version>
         <revision>3.0.2-SNAPSHOT</revision>
         <guava_version>20.0</guava_version>
+
+        <!-- Maven plugin -->
+        <maven_plugin_api_version>3.6.2</maven_plugin_api_version>
+        <maven_plugin_annotations_version>3.6.0</maven_plugin_annotations_version>
+        <maven_plugin_plugin_version>3.6.0</maven_plugin_plugin_version>
+        <maven_project_version>2.2.1</maven_project_version>
     </properties>
 
     <dependencyManagement>
@@ -753,6 +759,23 @@
                 <artifactId>guava</artifactId>
                 <version>${guava_version}</version>
             </dependency>
+            <!-- for dubbo-native-maven-plugin -->
+            <dependency>
+                <groupId>org.apache.maven</groupId>
+                <artifactId>maven-plugin-api</artifactId>
+                <version>${maven_plugin_api_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.maven.plugin-tools</groupId>
+                <artifactId>maven-plugin-annotations</artifactId>
+                <version>${maven_plugin_annotations_version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.maven</groupId>
+                <artifactId>maven-project</artifactId>
+                <version>${maven_project_version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -782,6 +805,12 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <!-- for dubbo-native-maven-plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-plugin-plugin</artifactId>
+                <version>${maven_plugin_plugin_version}</version>
             </plugin>
         </plugins>
     </build>

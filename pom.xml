@@ -152,6 +152,7 @@
         <module>dubbo-metadata</module>
         <module>dubbo-build-tools</module>
         <module>dubbo-spring-boot</module>
+        <module>dubbo-native-maven-plugin</module>
     </modules>
 
     <dependencyManagement>
