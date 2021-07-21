@@ -31,11 +31,9 @@ import java.util.Map;
 public class ServiceCheckUtils {
 
     public static boolean isRegistered(ProviderModel providerModel) {
-        // TODO, only check the status of one registry and no protocol now.
-        Collection<Registry> registries = AbstractRegistryFactory.getRegistries();
-        if (CollectionUtils.isNotEmpty(registries)) {
-            AbstractRegistry abstractRegistry = (AbstractRegistry) registries.iterator().next();
-            if (abstractRegistry.getRegistered().stream().anyMatch(url -> url.getServiceKey().equals(providerModel.getServiceKey()))) {
+        // check the status of all registries and protocols now.
+        for (RegisterStatedURL registerStatedURL : providerModel.getStatedUrl()) {
+            if (registerStatedURL.isRegistered()) {
                 return true;
             }
         }
