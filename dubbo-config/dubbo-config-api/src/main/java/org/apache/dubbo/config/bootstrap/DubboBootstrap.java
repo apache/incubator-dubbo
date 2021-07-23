@@ -84,6 +84,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -767,6 +768,7 @@ public class DubboBootstrap {
         for (MetadataReportConfig metadataReportConfig : metadataReportConfigs) {
             ConfigValidationUtils.validateMetadataConfig(metadataReportConfig);
             if (!metadataReportConfig.isValid()) {
+                logger.info("Ignore invalid metadata-report config: " + metadataReportConfig);
                 continue;
             }
             MetadataReportInstance.init(metadataReportConfig);
@@ -797,11 +799,14 @@ public class DubboBootstrap {
                 .stream()
                 .filter(this::isUsedRegistryAsConfigCenter)
                 .map(this::registryAsConfigCenter)
-                .forEach(configManager::addConfigCenter);
+                .forEach(configCenter -> {
+                    if (configManager.getConfigCenter(configCenter.getId()).isPresent()) {
+                        return;
+                    }
+                    configManager.addConfigCenter(configCenter);
+                    logger.info("use registry as config-center: " + configCenter);
 
-            if (configManager.getConfigCenters().size() > 0) {
-                logger.info("use registry as config-center: " + configManager.getConfigCenters());
-            }
+                });
         }
     }
 
@@ -813,7 +818,8 @@ public class DubboBootstrap {
     private ConfigCenterConfig registryAsConfigCenter(RegistryConfig registryConfig) {
         String protocol = registryConfig.getProtocol();
         Integer port = registryConfig.getPort();
-        String id = "config-center-" + protocol + "-" + port;
+        URL url = URL.valueOf(registryConfig.getAddress());
+        String id = "config-center-" + protocol + "-" + url.getHost() + "-" + port;
         ConfigCenterConfig cc = new ConfigCenterConfig();
         cc.setId(id);
         if (cc.getParameters() == null) {
@@ -853,11 +859,14 @@ public class DubboBootstrap {
                 .stream()
                 .filter(this::isUsedRegistryAsMetadataCenter)
                 .map(this::registryAsMetadataCenter)
-                .forEach(configManager::addMetadataReport);
-
-            if (configManager.getMetadataConfigs().size() > 0) {
-                logger.info("use registry as metadata-center: " + configManager.getMetadataConfigs());
-            }
+                .forEach(metadataReportConfig -> {
+                    Optional<MetadataReportConfig> configOptional = configManager.getConfig(MetadataReportConfig.class, metadataReportConfig.getId());
+                    if (configOptional.isPresent()) {
+                        return;
+                    }
+                    configManager.addMetadataReport(metadataReportConfig);
+                    logger.info("use registry as metadata-center: " + metadataReportConfig);
+                });
         }
     }
 
@@ -918,8 +927,8 @@ public class DubboBootstrap {
 
     private MetadataReportConfig registryAsMetadataCenter(RegistryConfig registryConfig) {
         String protocol = registryConfig.getProtocol();
-        Integer port = registryConfig.getPort();
-        String id = "metadata-center-" + protocol + "-" + port;
+        URL url = URL.valueOf(registryConfig.getAddress());
+        String id = "metadata-center-" + protocol + "-" + url.getHost() + "-" + url.getPort();
         MetadataReportConfig metadataReportConfig = new MetadataReportConfig();
         metadataReportConfig.setId(id);
         if (metadataReportConfig.getParameters() == null) {

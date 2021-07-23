@@ -645,7 +645,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
                 case IGNORE: {
                     // ignore later config
                     if (logger.isWarnEnabled() && duplicatedConfigs.add(config)) {
-                        logger.warn(msgPrefix + "keep previous config and ignore later config: " + config);
+                        logger.warn(msgPrefix + "keep previous config and ignore later config");
                     }
                     return oldOne;
                 }
@@ -653,7 +653,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
                     // clear previous config, add new config
                     configsMap.clear();
                     if (logger.isWarnEnabled() && duplicatedConfigs.add(config)) {
-                        logger.warn(msgPrefix + "override previous config with later config: " + config);
+                        logger.warn(msgPrefix + "override previous config with later config");
                     }
                     break;
                 }
@@ -662,16 +662,22 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 
         String key = getId(config);
         if (key == null) {
-            // generate key for non-default config compatible with API usages
-            key = generateConfigId(config);
+            do {
+                // generate key if id is not set
+                key = generateConfigId(config);
+            } while (configsMap.containsKey(key));
         }
 
-        C existedConfig = configsMap.putIfAbsent(key, config);
-        if (isEquals(existedConfig, config)) {
+        C existedConfig = configsMap.get(key);
+        if (existedConfig != null && !isEquals(existedConfig, config)) {
             String type = config.getClass().getSimpleName();
-            throw new IllegalStateException(String.format("Duplicate %s found, there already has one default %s or more than two %ss have the same id, " +
-                    "you can try to give each %s a different id, key: %s, prev: %s, new: %s", type, type, type, type, key, existedConfig, config));
+            logger.warn(String.format("Duplicate %s found, there already has one default %s or more than two %ss have the same id, " +
+                    "you can try to give each %s a different id, override previous config with later config. id: %s, prev: %s, later: %s",
+                type, type, type, type, key, existedConfig, config));
         }
+
+        // override existed config if any
+        configsMap.put(key, config);
         return config;
     }
 
@@ -716,6 +722,9 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 
             if (prevConfig.equals(config)) {
                 // TODO Is there any problem with ignoring duplicate and equivalent but different ReferenceConfig instances?
+                if (logger.isWarnEnabled() && duplicatedConfigs.add(config)) {
+                    logger.warn("Ignore duplicated and equal config: "+config);
+                }
                 return prevConfig;
             }
 
