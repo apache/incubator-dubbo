@@ -49,16 +49,21 @@ public interface Constants {
     String CHANNEL_CALLBACK_KEY = "channel.callback.invokers.key";
 
     /**
-     * The initial state for lazy connection
+     * The initial connect state for lazy connection
      */
     String LAZY_CONNECT_INITIAL_STATE_KEY = "connect.lazy.initial.state";
 
     /**
-     * The default value of lazy connection's initial state: true
+     * The default value of lazy connection's initial connect state: true
      *
      * @see #LAZY_CONNECT_INITIAL_STATE_KEY
      */
     boolean DEFAULT_LAZY_CONNECT_INITIAL_STATE = true;
+
+    /**
+     * The close state for lazy connection
+     */
+    String LAZY_CLOSE_STATE_KEY = "close.lazy.state";
 
     String OPTIMIZER_KEY = "optimizer";
 
