@@ -14,12 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.transport.netty4;
+package org.apache.dubbo.remoting.api;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.SslConfig;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import io.netty.handler.ssl.ClientAuth;
@@ -38,17 +39,18 @@ public class SslContexts {
     private static final Logger logger = LoggerFactory.getLogger(SslContexts.class);
 
     public static SslContext buildServerSslContext(URL url) {
-        SslConfig sslConfig = getSslConfig();
+        ConfigManager globalConfigManager = ApplicationModel.getConfigManager();
+        SslConfig sslConfig = globalConfigManager.getSsl().orElseThrow(() -> new IllegalStateException("Ssl enabled, but no ssl cert information provided!"));
 
-        SslContextBuilder sslClientContextBuilder = null;
+        SslContextBuilder sslClientContextBuilder;
         try {
             String password = sslConfig.getServerKeyPassword();
             if (password != null) {
                 sslClientContextBuilder = SslContextBuilder.forServer(sslConfig.getServerKeyCertChainPathStream(),
-                        sslConfig.getServerPrivateKeyPathStream(), password);
+                    sslConfig.getServerPrivateKeyPathStream(), password);
             } else {
                 sslClientContextBuilder = SslContextBuilder.forServer(sslConfig.getServerKeyCertChainPathStream(),
-                        sslConfig.getServerPrivateKeyPathStream());
+                    sslConfig.getServerPrivateKeyPathStream());
             }
 
             if (sslConfig.getServerTrustCertCollectionPathStream() != null) {
@@ -66,7 +68,8 @@ public class SslContexts {
     }
 
     public static SslContext buildClientSslContext(URL url) {
-        SslConfig sslConfig = getSslConfig();
+        ConfigManager globalConfigManager = ApplicationModel.getConfigManager();
+        SslConfig sslConfig = globalConfigManager.getSsl().orElseThrow(() -> new IllegalStateException("Ssl enabled, but no ssl cert information provided!"));
 
         SslContextBuilder builder = SslContextBuilder.forClient();
         try {

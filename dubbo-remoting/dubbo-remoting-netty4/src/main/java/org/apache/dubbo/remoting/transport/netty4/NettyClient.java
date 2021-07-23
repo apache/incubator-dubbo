@@ -25,6 +25,7 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.remoting.api.SslClientTlsHandler;
 import org.apache.dubbo.remoting.transport.AbstractClient;
 import org.apache.dubbo.remoting.utils.UrlUtils;
 
@@ -107,7 +108,7 @@ public class NettyClient extends AbstractClient {
                 int heartbeatInterval = UrlUtils.getHeartbeat(getUrl());
 
                 if (getUrl().getParameter(SSL_ENABLED_KEY, false)) {
-                    ch.pipeline().addLast("negotiation", SslHandlerInitializer.sslClientHandler(getUrl(), nettyClientHandler));
+                    ch.pipeline().addLast("negotiation", new SslClientTlsHandler(getUrl()));
                 }
 
                 NettyCodecAdapter adapter = new NettyCodecAdapter(getCodec(), getUrl(), NettyClient.this);
