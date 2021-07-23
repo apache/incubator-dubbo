@@ -58,7 +58,7 @@ stub = {{serviceName}}Grpc.newStub(channel).build(channel, callOptions);
     .{{methodName}}(request);
     }
 
-    public com.google.common.util.concurrent.ListenableFuture<{{outputType}}> {{methodName}}Async({{inputType}} request) {
+    public com.google.common.util.concurrent.ListenableFuture<{{outputType}}> {{methodName}}Async$({{inputType}} request) {
     return futureStub
     .withDeadlineAfter(url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT), TimeUnit.MILLISECONDS)
     .{{methodName}}(request);
@@ -128,7 +128,7 @@ public interface I{{serviceName}} {
     {{#deprecated}}
         @java.lang.Deprecated
     {{/deprecated}}
-    default public com.google.common.util.concurrent.ListenableFuture<{{outputType}}> {{methodName}}Async({{inputType}} request) {
+    default public com.google.common.util.concurrent.ListenableFuture<{{outputType}}> {{methodName}}Async$({{inputType}} request) {
     throw new UnsupportedOperationException("No need to override this method, extend XxxImplBase and override all methods it allows.");
     }
 
@@ -203,7 +203,7 @@ this.proxiedImpl = proxiedImpl;
         @java.lang.Deprecated
     {{/deprecated}}
     @java.lang.Override
-    public final com.google.common.util.concurrent.ListenableFuture<{{outputType}}> {{methodName}}Async({{inputType}} request) {
+    public final com.google.common.util.concurrent.ListenableFuture<{{outputType}}> {{methodName}}Async$({{inputType}} request) {
     throw new UnsupportedOperationException("No need to override this method, extend XxxImplBase and override all methods it allows.");
     }
 
