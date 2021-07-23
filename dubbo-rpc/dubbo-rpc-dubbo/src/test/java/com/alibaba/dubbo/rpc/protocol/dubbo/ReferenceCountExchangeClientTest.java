@@ -26,7 +26,6 @@ import com.alibaba.dubbo.remoting.exchange.ExchangeClient;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.ProxyFactory;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -46,7 +45,7 @@ public class ReferenceCountExchangeClientTest {
     IHelloService helloService;
     ExchangeClient demoClient;
     ExchangeClient helloClient;
-    String errorMsg = "safe guard client , should not be called ,must have a bug";
+    String errorMsg = "safe guard client";
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {

@@ -167,11 +167,9 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
     private LazyConnectExchangeClient replaceWithLazyClient() {
         // this is a defensive operation to avoid client is closed by accident, the initial state of the client is false
         URL lazyUrl = url.addParameter(Constants.LAZY_CONNECT_INITIAL_STATE_KEY, Boolean.TRUE)
-                .addParameter(Constants.RECONNECT_KEY, Boolean.FALSE)
                 .addParameter(Constants.SEND_RECONNECT_KEY, Boolean.TRUE.toString())
-                .addParameter("warning", Boolean.TRUE.toString())
-                .addParameter(LazyConnectExchangeClient.REQUEST_WITH_WARNING_KEY, true)
-                .addParameter("_client_memo", "referencecounthandler.replacewithlazyclient");
+                .addParameter(LazyConnectExchangeClient.REQUEST_WITH_WARNING_KEY, true);
+
 
         String key = url.getAddress();
         // in worst case there's only one ghost connection.

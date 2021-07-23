@@ -437,6 +437,9 @@ public class DubboProtocol extends AbstractProtocol {
                 }
             }
         }
+        // put here to reduce the chance of accepting new invocation after client closed.
+        // close invoker and then client.
+        super.destroy();
 
         for (String key : new ArrayList<String>(referenceClientMap.keySet())) {
             ExchangeClient client = referenceClientMap.remove(key);
@@ -466,6 +469,5 @@ public class DubboProtocol extends AbstractProtocol {
             }
         }
         stubServiceMethodsMap.clear();
-        super.destroy();
     }
 }

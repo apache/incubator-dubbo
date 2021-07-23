@@ -115,7 +115,7 @@ final class LazyConnectExchangeClient implements ExchangeClient {
     private void warning(Object request) {
         if (requestWithWarning) {
             if (warningcount.get() % 5000 == 0) {
-                logger.warn(new IllegalStateException("safe guard client , should not be called ,must have a bug."));
+                logger.warn(url.getAddress() + " " + url.getServiceKey() + " safe guard client get called after real client closed, recreating connection...");
             }
             warningcount.incrementAndGet();
         }
