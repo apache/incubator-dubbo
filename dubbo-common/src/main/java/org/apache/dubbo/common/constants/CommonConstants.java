@@ -183,6 +183,8 @@ public interface CommonConstants {
 
     String GROUP_KEY = "group";
 
+    String NACOS_GROUP_KEY = "nacos.group";
+
     String PATH_KEY = "path";
 
     String INTERFACE_KEY = "interface";
