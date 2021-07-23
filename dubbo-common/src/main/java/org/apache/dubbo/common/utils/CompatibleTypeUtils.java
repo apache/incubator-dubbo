@@ -145,6 +145,9 @@ public class CompatibleTypeUtils {
                 string.getChars(0, len, chars, 0);
                 return chars;
             }
+            if (byte[].class.equals(type)) {
+                return string.getBytes();
+            }
         }
         if (value instanceof Number) {
             Number number = (Number) value;
